@@ -29,18 +29,36 @@ function! s:wrap(seq)
   return a:seq."\<plug>(slash-trailer)"
 endfunction
 
-function! s:immobile(seq)
-  let s:winline = winline()
-  let s:pos = getpos('.')
-  return a:seq."\<plug>(slash-prev)"
-endfunction
-
 function! s:trailer()
   augroup slash
     autocmd!
     autocmd CursorMoved,CursorMovedI * set nohlsearch | autocmd! slash
   augroup END
 
+  let seq = foldclosed('.') != -1 ? 'zv' : ''
+  if exists('s:winline')
+    let sdiff = winline() - s:winline
+    unlet s:winline
+    if sdiff > 0
+      let seq .= sdiff."\<c-e>"
+    elseif sdiff < 0
+      let seq .= -sdiff."\<c-y>"
+    endif
+  endif
+  let after = len(maparg("<plug>(slash-after)", mode())) ? "\<plug>(slash-after)" : ''
+  return seq . after
+endfunction
+
+function! s:wrap2(seq)
+  if mode() == 'c' && stridx('/?', getcmdtype()) < 0
+    return a:seq
+  endif
+  silent! autocmd! slash
+  set hlsearch
+  return a:seq."\<plug>(slash-trailer2)"
+endfunction
+
+function! s:trailer2()
   let seq = foldclosed('.') != -1 ? 'zv' : ''
   if exists('s:winline')
     let sdiff = winline() - s:winline
@@ -105,6 +123,7 @@ function! slash#blink(times, delay)
 endfunction
 
 map      <expr> <plug>(slash-trailer) <sid>trailer()
+map      <expr> <plug>(slash-trailer2) <sid>trailer2()
 imap     <expr> <plug>(slash-trailer) <sid>trailer_on_leave()
 cnoremap        <plug>(slash-cr)      <cr>
 noremap  <expr> <plug>(slash-prev)    <sid>prev()
@@ -116,3 +135,7 @@ map  <expr> n    <sid>wrap('n')
 map  <expr> N    <sid>wrap('N')
 map  <expr> gd   <sid>wrap('gd')
 map  <expr> gD   <sid>wrap('gD')
+map  <expr> #    <sid>wrap2('#')
+map  <expr> *    <sid>wrap2('*')
+map  <expr> g*   <sid>wrap2('g*')
+map  <expr> g#   <sid>wrap2('g#')
