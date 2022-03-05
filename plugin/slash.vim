@@ -130,7 +130,7 @@ noremap  <expr> <plug>(slash-prev)    <sid>prev()
 inoremap        <plug>(slash-prev)    <nop>
 noremap!        <plug>(slash-nop)     <nop>
 
-cmap <expr> <cr> <sid>wrap("\<cr>")
+"cmap <expr> <cr> <sid>wrap("\<cr>")
 map  <expr> n    <sid>wrap('n')
 map  <expr> N    <sid>wrap('N')
 map  <expr> gd   <sid>wrap('gd')
